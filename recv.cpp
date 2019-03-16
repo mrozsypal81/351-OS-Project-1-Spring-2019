@@ -40,7 +40,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 			ofstream outfile ("keyfile.txt");
 			outfile << "Hello world" << endl;
 			outfile.close();
-	        // 2. Use ftok("keyfile.txt", 'a') in order to generate the key.
+	 // 2. Use ftok("keyfile.txt", 'a') in order to generate the key.
 			key_t key = ftok("keyfile.txt", 'a');
 		/* 3. Use the key in the TODO's below. Use the same key for the queue
 		    and the shared memory segment. This also serves to illustrate the difference
@@ -51,27 +51,23 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 	 */
 	/* TODO: Allocate a piece of shared memory. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE. */
 	shmid = shmget(key,SHARED_MEMORY_CHUNK_SIZE,0666|IPC_CREAT);
-	if(shmid < 0)
-	{
+	if(shmid < 0){
 		perror("shmget");
 		exit(-1);
 	}
 	/* TODO: Attach to the shared memory */
 	sharedMemPtr = (char*)shmat(shmid,(void*)0,0);
-	if(((void*)sharedMemPtr) < 0)
-	{
+	if(((void*)sharedMemPtr) < 0){
 		perror("shmat");
 		exit(-1);
 	}
 	/* TODO: Create a message queue */
 	msqid = msgget(key,0666| IPC_CREAT);
-	if(msqid < 0)
-{
-	perror("msgget");
-	exit(-1);
-}
+	if(msqid < 0){
+		perror("msgget");
+		exit(-1);
+  }
 	/* Store the IDs and the pointer to the shared memory region in the corresponding parameters */
-
 
 }
 
@@ -114,19 +110,16 @@ void mainLoop()
 	while(msgSize != 0)
 	{
 		message msg;
-	if(msgrcv(msqid, &msg, sizeof(message) - sizeof(long), SENDER_DATA_TYPE, 0) < 0)
- {
-	 perror("msgsnd");
-	 fclose(fp);
-	 exit(-1);
- }
- msgSize = msg.size;
+		if(msgrcv(msqid, &msg, sizeof(message) - sizeof(long), SENDER_DATA_TYPE, 0) < 0){
+	  	perror("msgsnd");
+	  	fclose(fp);
+	  	exit(-1);
+		}
+ 		msgSize = msg.size;
 		/* If the sender is not telling us that we are done, then get to work */
-		if(msgSize != 0)
-		{
+		if(msgSize != 0){
 			/* Save the shared memory to file */
-			if(fwrite(sharedMemPtr, sizeof(char), msgSize, fp) < 0)
-			{
+			if(fwrite(sharedMemPtr, sizeof(char), msgSize, fp) < 0){
 				perror("fwrite");
 			}
 
@@ -136,12 +129,10 @@ void mainLoop()
  			 */
 			 message msgFinished;
 			 msgFinished.mtype = RECV_DONE_TYPE;
-			 if(msgsnd(msqid, &msgFinished, sizeof(message) - sizeof(long), 0) < 0)
-		 {
-			 perror("msgsnd");
-			 exit(-1);
-		 }
-
+			 if(msgsnd(msqid, &msgFinished, sizeof(message) - sizeof(long), 0) < 0){
+			 	perror("msgsnd");
+			 	exit(-1);
+		 	 }
 		}
 		/* We are done */
 		else
@@ -164,23 +155,20 @@ void mainLoop()
 void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr)
 {
 	/* TODO: Detach from shared memory */
-	if(shmdt(sharedMemPtr) < 0)
-{
-	perror("shmdt");
-	exit(-1);
-}
+	if(shmdt(sharedMemPtr) < 0){
+		perror("shmdt");
+		exit(-1);
+	}
 	/* TODO: Deallocate the shared memory chunk */
-	if(shmctl(shmid, IPC_RMID, NULL) < 0)
-	{
+	if(shmctl(shmid, IPC_RMID, NULL) < 0){
 		perror("shmctl");
 		exit(-1);
 	}
 	/* TODO: Deallocate the message queue */
-	if(msgctl(msqid, IPC_RMID, NULL) < 0)
-{
-	perror("msgctl");
-	exit(-1);
-}
+	if(msgctl(msqid, IPC_RMID, NULL) < 0){
+		perror("msgctl");
+		exit(-1);
+	}
 }
 
 /**
