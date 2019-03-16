@@ -1,4 +1,4 @@
-
+//recv.cpp
 #include <sys/shm.h>
 #include <sys/msg.h>
 #include <signal.h>
