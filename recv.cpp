@@ -198,6 +198,18 @@ int main(int argc, char** argv)
 	/* Go to the main loop */
 	mainLoop();
 
+	string line;
+	ifstream myfile ("recvfile");
+	if (myfile.is_open())
+	{
+		while ( getline (myfile,line) )
+		{
+			cout << line << '\n';
+		}
+		myfile.close();
+	}
+
+
 	/** TODO: Detach from shared memory segment, and deallocate shared memory and message queue (i.e. call cleanup) **/
 	cleanUp(shmid, msqid, sharedMemPtr);
 
