@@ -58,18 +58,19 @@ void* sharedMemPtr;
 
 void init(int& shmid, int& msqid, void*& sharedMemPtr)
 {
-	// TODO:
-      //  1. Create a file called keyfile.txt containing string "Hello world" (you may do
- 		  // so manually or from the code).
- 		ofstream outfile ("keyfile.txt");
-		outfile << "Hello world" << endl;
-		outfile.close();
-	//    2. Use ftok("keyfile.txt", 'a') in order to generate the key.
+// TODO:
+//  1. Create a file called keyfile.txt containing string "Hello world" 
+ 	ofstream outfile ("keyfile.txt");
+	outfile << "Hello world" << endl;
+	outfile.close();
+// 2. Use ftok("keyfile.txt", 'a') in order to generate the key.
 		key_t key = ftok("keyfile.txt", 'a');
-    if(key < 0){
-	 	   perror("ftok");
-		     exit(-1);
-	  }
+    	//Check if the key is a vaild key
+	if(key < 0){
+	 	perror("ftok");
+		exit(-1);
+	}
+	
 	/*  	3. Use the key in the TODO's below. Use the same key for the queue
 		    and the shared memory segment. This also serves to illustrate the difference
 	      between the key and the id used in message queues and shared memory. The id
@@ -77,23 +78,25 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 		    is unique system-wide among all SYstem V objects. Two objects, on the other hand,
 		    may have the same key.*/
 
-
-
 	/* TODO: Get the id of the shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE */
 	shmid = shmget(key,SHARED_MEMORY_CHUNK_SIZE,0666|IPC_CREAT);
-  if(shmid < 0){
-    perror("shmget");
-    exit(-1);
-  }
+  	// Check if the shared memory id is vaild
+	if(shmid < 0){
+   	 	perror("shmget");
+   	 	exit(-1);
+  	}
+	
 	/* TODO: Attach to the shared memory */
 	sharedMemPtr = (char*)shmat(shmid,(void*)0,0);
-  if(((void*)sharedMemPtr) < 0){
+	// Check if shared memory pointer is vaild
+  	if(((void*)sharedMemPtr) < 0){
 		perror("shmat");
 		exit(-1);
 	}
 	/* TODO: Attach to the message queue */
 	msqid = msgget(key, 0666 | IPC_CREAT);
-  if(msqid < 0){
+	// Check if message queue id is vaild
+  	if(msqid < 0){
 		perror("msgget");
 		exit(-1);
 	}
@@ -111,7 +114,9 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr)
 {
 	/* TODO: Detach from shared memory */
-  if(shmdt(sharedMemPtr) < 0){
+	//shmdt(): When you’re done with the shared memory segment, your program should
+	//detach itself from it using shmdt(). int shmdt(void *shmaddr);
+  	if(shmdt(sharedMemPtr) < 0){
 		perror("shmdt");
 		exit(-1);
 	}
@@ -155,15 +160,17 @@ void send(const char* fileName)
  		 * (message of type SENDER_DATA_TYPE)
  		 */
 		 sndMsg.mtype = SENDER_DATA_TYPE;
-     if(msgsnd(msqid, &sndMsg, sizeof(message) - sizeof(long), 0) < 0){
-       perror("msgsnd");
-       exit(-1);
-     }
+		//msgsnd(): Data is placed on to a message queue by calling msgsnd().
+     		if(msgsnd(msqid, &sndMsg, sizeof(message) - sizeof(long), 0) < 0){
+       			perror("msgsnd");
+       			exit(-1);
+     		}
 
 		/* TODO: Wait until the receiver sends us a message of type RECV_DONE_TYPE telling us
  		 * that he finished saving the memory chunk.
  		 */
-     do{
+     		do{
+			//msgrcv(): messages are retrieved from a queue.
   			msgrcv(msqid, &rcvMsg, sizeof(message) - sizeof(long), RECV_DONE_TYPE, 0);
   		}while(rcvMsg.mtype != RECV_DONE_TYPE);
 
@@ -174,11 +181,12 @@ void send(const char* fileName)
  	  * Lets tell the receiver that we have nothing more to send. We will do this by
  	  * sending a message of type SENDER_DATA_TYPE with size field set to 0.
 	  */
-    sndMsg.size = 0;
-    if(msgsnd(msqid, &sndMsg, sizeof(message) - sizeof(long), 0) < 0){
-      perror("msgsnd");
-      exit(-1);
-    }
+    	sndMsg.size = 0;
+    	//msgsnd(): Data is placed on to a message queue by calling msgsnd().
+	if(msgsnd(msqid, &sndMsg, sizeof(message) - sizeof(long), 0) < 0){
+     	 	perror("msgsnd");
+      		exit(-1);
+	}
 
 	/* Close the file */
 	fclose(fp);
