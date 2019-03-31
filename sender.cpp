@@ -65,7 +65,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 	outfile.close();
 // 2. Use ftok("keyfile.txt", 'a') in order to generate the key.
 		key_t key = ftok("keyfile.txt", 'a');
-    	//Check if the key is a vaild key
+    	//Check if the key is a valid key
 	if(key < 0){
 	 	perror("ftok");
 		exit(-1);
@@ -80,7 +80,7 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 
 	/* TODO: Get the id of the shared memory segment. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE */
 	shmid = shmget(key,SHARED_MEMORY_CHUNK_SIZE,0666|IPC_CREAT);
-  	// Check if the shared memory id is vaild
+  	// Check if the shared memory id is valid
 	if(shmid < 0){
    	 	perror("shmget");
    	 	exit(-1);
@@ -88,14 +88,14 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 	
 	/* TODO: Attach to the shared memory */
 	sharedMemPtr = (char*)shmat(shmid,(void*)0,0);
-	// Check if shared memory pointer is vaild
+	// Check if shared memory pointer is valid
   	if(((void*)sharedMemPtr) < 0){
 		perror("shmat");
 		exit(-1);
 	}
 	/* TODO: Attach to the message queue */
 	msqid = msgget(key, 0666 | IPC_CREAT);
-	// Check if message queue id is vaild
+	// Check if message queue id is valid
   	if(msqid < 0){
 		perror("msgget");
 		exit(-1);
