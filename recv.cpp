@@ -34,39 +34,42 @@ const char recvFileName[] = "recvfile";
 void init(int& shmid, int& msqid, void*& sharedMemPtr)
 {
 
-	/* TODO: 1. Create a file called keyfile.txt containing string "Hello world" (you may do
- 		    so manually or from the code).
+/* TODO: 1. Create a file called keyfile.txt containing string "Hello world" (you may do
+ 	so manually or from the code).
 			*/
-			ofstream outfile ("keyfile.txt");
-			outfile << "Hello world" << endl;
-			outfile.close();
-	 // 2. Use ftok("keyfile.txt", 'a') in order to generate the key.
-			key_t key = ftok("keyfile.txt", 'a');
-		/* 3. Use the key in the TODO's below. Use the same key for the queue
-		    and the shared memory segment. This also serves to illustrate the difference
-		    between the key and the id used in message queues and shared memory. The id
-		    for any System V object (i.e. message queues, shared memory, and sempahores)
-		    is unique system-wide among all System V objects. Two objects, on the other hand,
-		    may have the same key.
-	 */
+	ofstream outfile ("keyfile.txt");
+	outfile << "Hello world" << endl;
+	outfile.close();
+// 2. Use ftok("keyfile.txt", 'a') in order to generate the key.
+	key_t key = ftok("keyfile.txt", 'a');
+/* 3. Use the key in the TODO's below. Use the same key for the queue
+	and the shared memory segment. This also serves to illustrate the difference
+	between the key and the id used in message queues and shared memory. The id
+	for any System V object (i.e. message queues, shared memory, and sempahores)
+	is unique system-wide among all System V objects. Two objects, on the other hand,
+	may have the same key.
+ */
 	/* TODO: Allocate a piece of shared memory. The size of the segment must be SHARED_MEMORY_CHUNK_SIZE. */
 	shmid = shmget(key,SHARED_MEMORY_CHUNK_SIZE,0666|IPC_CREAT);
+	//check if shared memory id is valid
 	if(shmid < 0){
 		perror("shmget");
 		exit(-1);
 	}
 	/* TODO: Attach to the shared memory */
 	sharedMemPtr = (char*)shmat(shmid,(void*)0,0);
+	//check if shared memory pointer is valid
 	if(((void*)sharedMemPtr) < 0){
 		perror("shmat");
 		exit(-1);
 	}
 	/* TODO: Create a message queue */
 	msqid = msgget(key,0666| IPC_CREAT);
+	//check if message queue is valid
 	if(msqid < 0){
 		perror("msgget");
 		exit(-1);
-  }
+  	}
 	/* Store the IDs and the pointer to the shared memory region in the corresponding parameters */
 
 }
@@ -78,7 +81,8 @@ void init(int& shmid, int& msqid, void*& sharedMemPtr)
 void mainLoop()
 {
 	/* The size of the mesage */
-	int msgSize = -1;
+	//default the message size to 1
+	int msgSize = 1;
 
 	/* Open the file for writing */
 	FILE* fp = fopen(recvFileName, "w");
@@ -100,8 +104,6 @@ void mainLoop()
      * NOTE: the received file will always be saved into the file called
      * "recvfile"
      */
-	//	 message msg;
-	//	 msgSize = msg.size; //get into the loop
 
 	/* Keep receiving until the sender set the size to 0, indicating that
  	 * there is no more data to send
@@ -110,11 +112,13 @@ void mainLoop()
 	while(msgSize != 0)
 	{
 		message msg;
+		//msgrcv(): messages are retrieved from a queue.
 		if(msgrcv(msqid, &msg, sizeof(message) - sizeof(long), SENDER_DATA_TYPE, 0) < 0){
-	  	perror("msgsnd");
-	  	fclose(fp);
-	  	exit(-1);
+	  		perror("msgsnd");
+	  		fclose(fp);
+	  		exit(-1);
 		}
+		//reset the message size
  		msgSize = msg.size;
 		/* If the sender is not telling us that we are done, then get to work */
 		if(msgSize != 0){
@@ -155,16 +159,22 @@ void mainLoop()
 void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr)
 {
 	/* TODO: Detach from shared memory */
+	//shmdt(): When you’re done with the shared memory segment, your program should
+	//detach itself from it using shmdt(). int shmdt(void *shmaddr);
 	if(shmdt(sharedMemPtr) < 0){
 		perror("shmdt");
 		exit(-1);
 	}
 	/* TODO: Deallocate the shared memory chunk */
+	//shmctl(): when you detach from shared memory,it is not destroyed. So, to destroy
+	//shmctl() is used. shmctl(int shmid,IPC_RMID,NULL);
 	if(shmctl(shmid, IPC_RMID, NULL) < 0){
 		perror("shmctl");
 		exit(-1);
 	}
 	/* TODO: Deallocate the message queue */
+	//msgctl(): It performs various operations on a queue. Generally it is use to
+	//destroy message queue.
 	if(msgctl(msqid, IPC_RMID, NULL) < 0){
 		perror("msgctl");
 		exit(-1);
@@ -179,6 +189,7 @@ void cleanUp(const int& shmid, const int& msqid, void* sharedMemPtr)
 void ctrlCSignal(int signal)
 {
 	/* Free system V resources */
+	// call clean up function to delete message queue and shared memory
 	cleanUp(shmid, msqid, sharedMemPtr);
 }
 
@@ -197,7 +208,8 @@ int main(int argc, char** argv)
 
 	/* Go to the main loop */
 	mainLoop();
-
+	
+	// display the message store in recvfile
 	string line;
 	ifstream myfile ("recvfile");
 	if (myfile.is_open())
