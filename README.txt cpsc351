@@ -8,7 +8,7 @@ Rodrigo Reynoso - rodrigoreynoso@csu.fullerton.edu
 Programming Language used: C++
 -------------------------------------------------------
 How to execute the program: 
-1. Open a terminal and ensure you are in the correct directory. 
+1. Open a terminal and ensure you are in the correct directory using 'cd <path to program>'. 
 2. Type  'make'  in the terminal 
 3. Type  './sender keyfile.txt' 
 4. Open another terminal and type './recv'
