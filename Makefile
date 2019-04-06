@@ -6,12 +6,11 @@ sender:	sender.o
 recv:	recv.o
 	g++ recv.o -o recv
 
-sender.o:	 sender.cpp
+sender.o: sender.cpp
 	g++ -c sender.cpp
 
 recv.o:	recv.cpp
 	g++ -c recv.cpp
-
-
+	
 clean:
 	rm -rf *.o sender recv 
