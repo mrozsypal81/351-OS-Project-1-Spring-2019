@@ -1,0 +1,23 @@
+CPSC 351 SECTION #03 13681:
+
+Alex Garcia - alex.garcia@csu.fullerton.edu 
+Lambert Liu - chenxiaoliu_1998@csu.fullerton.edu,
+Michael Rozsypal - mrozsypal@csu.fullerton.edu 
+Rodrigo Reynoso - rodrigoreynoso@csu.fullerton.edu
+-------------------------------------------------------
+Programming Language used: C++
+-------------------------------------------------------
+How to execute the program: 
+1. Open a terminal and ensure you are in the correct directory using 'cd <path to program>'. 
+2. Type  'make'  in the terminal 
+3. Type  './sender keyfile.txt' 
+4. Open another terminal and type './recv'
+5. Finish
+-------------------------------------------------------
+Extra Credit: TBD
+-------------------------------------------------------
+Contribution:
+Alex and Rodrigo collaborated to create the design of the program.
+Lambert and Michael worked together on the code and implementation of the program.
+Group members collaborated through meetings or working with each other online from home. 
+Members would discuss problems and propose solutions to those problems, whether it was a design, code, or implementation issue.
